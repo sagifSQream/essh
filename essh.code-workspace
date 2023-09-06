@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"essh": "python",
+			"escp": "python"
+		}
+		
+	}
+}

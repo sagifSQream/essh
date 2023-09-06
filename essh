@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import os
+parser = argparse.ArgumentParser(description='easy ssh for known subnets')
+parser.add_argument('addr', metavar='N',nargs=1,help='partial address of the remote server')
+parser.add_argument('--user',required=False)
+parser.add_argument('trailing',metavar='N',nargs='*')
+
+args=parser.parse_args()
+
+cmd_ssh_addr=args.addr[0]
+ssh_user_parts=cmd_ssh_addr.split('@')
+ssh_user=os.getenv('USER')
+if args.user:
+    ssh_user=args.user
+else:
+    if len(ssh_user_parts)>1:
+        ssh_user=ssh_user_parts[0]
+
+
+ssh_host=ssh_user_parts[0]
+if len(ssh_user_parts)>1:
+    ssh_host=ssh_user_parts[1]
+
+possible_host_values=["192","168","0"]
+
+ssh_host_parts=ssh_host.split('.')
+
+ssh_host_addr=ssh_host_parts[:]
+if len(ssh_host_addr)<4:
+    ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
+
+
+ssh_cmd=['ssh',f'''{ssh_user}@{'.'.join(ssh_host_addr)}''']+args.trailing
+ssh_res=subprocess.run(ssh_cmd)
+os.close(ssh_res.returncode)
+
+
+
+
+
+
+
