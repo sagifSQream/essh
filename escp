@@ -33,7 +33,7 @@ if len(ssh_host_addr)<4:
     ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
 
 
-ssh_cmd=['ssh',f'''{ssh_user}@{'.'.join(ssh_host_addr)}''']+args.trailing
+ssh_cmd=['scp',f'''{ssh_user}@{'.'.join(ssh_host_addr)}''']+args.trailing
 ssh_res=subprocess.run(ssh_cmd)
 os.close(ssh_res.returncode)
 
