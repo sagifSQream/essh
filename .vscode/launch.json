@@ -5,12 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: essh",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["0.124","--user","sqream"],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: escp",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["README.md","sagif@4.71:"],
             "justMyCode": true
         }
     ]

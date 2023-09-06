@@ -4,42 +4,58 @@ import argparse
 import subprocess
 import os
 parser = argparse.ArgumentParser(description='easy ssh for known subnets')
-parser.add_argument('addr', metavar='N',nargs=1,help='partial address of the remote server')
+parser.add_argument('targets', metavar='N',nargs='*',help='files to pass')
 parser.add_argument('--user',required=False)
-parser.add_argument('trailing',metavar='N',nargs='*')
 
 args=parser.parse_args()
-
-cmd_ssh_addr=args.addr[0]
-ssh_user_parts=cmd_ssh_addr.split('@')
-ssh_user=os.getenv('USER')
-if args.user:
-    ssh_user=args.user
-else:
-    if len(ssh_user_parts)>1:
-        ssh_user=ssh_user_parts[0]
-
-
-ssh_host=ssh_user_parts[0]
-if len(ssh_user_parts)>1:
-    ssh_host=ssh_user_parts[1]
-
 possible_host_values=["192","168","0"]
 
-ssh_host_parts=ssh_host.split('.')
+def extract_ssh_info(ssh_file):
+    has_host_addr=True if ':' in ssh_file else False
+    remote_file_path=None
+    if not has_host_addr:
+        remote_file_path=ssh_file
+    else:
+        remote_file_parts=ssh_file.split(':')
+        if len(remote_file_parts)>1:
+            remote_path=remote_file_parts[1]
+        else:
+            remote_path=''
+        host_part=remote_file_parts[0]
+        ssh_user=os.getenv('USER')
+        ssh_user_parts=host_part.split('@')
+        if args.user:
+            ssh_user=args.user
+        else:
+            if len(ssh_user_parts)>1:
+                ssh_user=ssh_user_parts[0]
+        
+        ssh_host_func=lambda host_parts: host_parts[0] if len(host_parts)<2 else host_parts[1]
+        ssh_file=ssh_host_func(ssh_user_parts)
+        ssh_host_parts=ssh_file.split('.')
+        ssh_host_addr=ssh_host_parts[:]
+        if len(ssh_host_addr)<4:
+            ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
 
-ssh_host_addr=ssh_host_parts[:]
-if len(ssh_host_addr)<4:
-    ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
+        remote_file_path=f'''{ssh_user}@{'.'.join(ssh_host_addr)}:{remote_path}'''
+
+    
+    return has_host_addr, remote_file_path
 
 
-ssh_cmd=['scp',f'''{ssh_user}@{'.'.join(ssh_host_addr)}''']+args.trailing
+found_remote=False
+file_list=[]
+for f in args.targets:
+    is_remote,remote_file=extract_ssh_info(f)
+    file_list.append(remote_file)
+    if is_remote:
+        found_remote=True
+        
+
+if not found_remote or len(file_list)<2:
+    print('no remote or local source files in command. consider using cp')
+    os.close(1)
+
+ssh_cmd=['scp']+file_list
 ssh_res=subprocess.run(ssh_cmd)
 os.close(ssh_res.returncode)
-
-
-
-
-
-
-

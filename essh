@@ -9,37 +9,31 @@ parser.add_argument('--user',required=False)
 parser.add_argument('trailing',metavar='N',nargs='*')
 
 args=parser.parse_args()
-
-cmd_ssh_addr=args.addr[0]
-ssh_user_parts=cmd_ssh_addr.split('@')
-ssh_user=os.getenv('USER')
-if args.user:
-    ssh_user=args.user
-else:
-    if len(ssh_user_parts)>1:
-        ssh_user=ssh_user_parts[0]
-
-
-ssh_host=ssh_user_parts[0]
-if len(ssh_user_parts)>1:
-    ssh_host=ssh_user_parts[1]
-
 possible_host_values=["192","168","0"]
 
-ssh_host_parts=ssh_host.split('.')
+def extract_ssh_info(ssh_host):
+    ssh_user=os.getenv('USER')
+    ssh_user_parts=cmd_ssh_addr.split('@')
+    if args.user:
+        ssh_user=args.user
+    else:
+        if len(ssh_user_parts)>1:
+            ssh_user=ssh_user_parts[0]
+    
+    ssh_host_func=lambda host_parts: host_parts[0] if len(host_parts)<2 else host_parts[1]
+    ssh_host=ssh_host_func(ssh_user_parts)
+    ssh_host_parts=ssh_host.split('.')
+    ssh_host_addr=ssh_host_parts[:]
+    if len(ssh_host_addr)<4:
+        ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
 
-ssh_host_addr=ssh_host_parts[:]
-if len(ssh_host_addr)<4:
-    ssh_host_addr=possible_host_values[0:4-len(ssh_host_addr)]+ssh_host_addr
+    return ssh_user,'.'.join(ssh_host_addr)
 
 
-ssh_cmd=['ssh',f'''{ssh_user}@{'.'.join(ssh_host_addr)}''']+args.trailing
+cmd_ssh_addr=args.addr[0]
+user,host_ip=extract_ssh_info(cmd_ssh_addr)
+
+
+ssh_cmd=['ssh',f'''{user}@{host_ip}''']+args.trailing
 ssh_res=subprocess.run(ssh_cmd)
 os.close(ssh_res.returncode)
-
-
-
-
-
-
-
