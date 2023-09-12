@@ -22,7 +22,7 @@ def extract_ssh_info(ssh_file):
         else:
             remote_path=''
         host_part=remote_file_parts[0]
-        ssh_user=os.getenv('USER')
+        ssh_user="sqream"
         ssh_user_parts=host_part.split('@')
         if args.user:
             ssh_user=args.user

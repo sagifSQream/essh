@@ -12,7 +12,7 @@ args=parser.parse_args()
 possible_host_values=["192","168","0"]
 
 def extract_ssh_info(ssh_host):
-    ssh_user=os.getenv('USER')
+    ssh_user="sqream"
     ssh_user_parts=cmd_ssh_addr.split('@')
     if args.user:
         ssh_user=args.user
